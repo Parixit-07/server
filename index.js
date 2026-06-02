@@ -7,6 +7,7 @@ const { Pool } = require('pg');
 dotenv.config();
 
 const app = express();
+const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes((process.env.PGHOST || '').toLowerCase());
 
 const allowedOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
@@ -33,7 +34,7 @@ const pool = new Pool({
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
   database: process.env.PGDATABASE,
-  ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : false,
+  ssl: process.env.PGSSL === 'true' || (!process.env.PGSSL && !isLocalHost) ? { rejectUnauthorized: false } : false,
 });
 
 app.get('/health', async (req, res) => {
@@ -41,6 +42,7 @@ app.get('/health', async (req, res) => {
     await pool.query('SELECT 1');
     res.json({ success: true, message: 'Server and DB are running' });
   } catch (e) {
+    console.error('Health check DB error:', e);
     res.status(500).json({ success: false, message: 'DB not reachable' });
   }
 });
