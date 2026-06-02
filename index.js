@@ -37,6 +37,10 @@ const pool = new Pool({
   ssl: process.env.PGSSL === 'true' || (!process.env.PGSSL && !isLocalHost) ? { rejectUnauthorized: false } : false,
 });
 
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'API is running' });
+});
+
 app.get('/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
