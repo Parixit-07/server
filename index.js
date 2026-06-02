@@ -46,8 +46,18 @@ app.get('/health', async (req, res) => {
     await pool.query('SELECT 1');
     res.json({ success: true, message: 'Server and DB are running' });
   } catch (e) {
-    console.error('Health check DB error:', e);
-    res.status(500).json({ success: false, message: 'DB not reachable' });
+    console.error('Health check DB error:', {
+      message: e.message,
+      code: e.code,
+      detail: e.detail,
+      hint: e.hint,
+    });
+    res.status(500).json({
+      success: false,
+      message: 'DB not reachable',
+      error: e.message,
+      code: e.code,
+    });
   }
 });
 
